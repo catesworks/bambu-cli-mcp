@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -54,8 +55,8 @@ async function main() {
   await server.connect(transport);
 }
 
-const entrypoint = process.argv[1] ? resolve(process.argv[1]) : "";
-if (entrypoint === fileURLToPath(import.meta.url)) {
+const entrypoint = process.argv[1] ? realpathSync(resolve(process.argv[1])) : "";
+if (entrypoint === realpathSync(fileURLToPath(import.meta.url))) {
   main().catch((error) => {
     console.error("Fatal error:", error);
     process.exit(1);
