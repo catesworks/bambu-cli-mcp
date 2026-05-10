@@ -55,7 +55,8 @@ jobs:
         run: bun build src/index.ts --compile --outfile ${{ matrix.artifact }} ${{ matrix.bun_args || '' }}
 
       - name: Verify binary exists
-        run: ls -la ${{ matrix.artifact }}
+        shell: bash
+        run: test -f "${{ matrix.artifact }}" && echo "OK: ${{ matrix.artifact }}"
 
       - uses: actions/upload-artifact@v4
         with:
