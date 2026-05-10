@@ -1,0 +1,56 @@
+{
+  "name": "RC Ramp 400% Scale",
+  "description": "Scale an RC ramp STL to 400%, split for Bambu Lab X1E, add dowel connectors, export 3MF projects",
+  "steps": [
+    {
+      "tool": "inspect_mesh",
+      "args": { "path": "/path/to/rc_ramp.stl" }
+    },
+    {
+      "tool": "repair_mesh",
+      "args": { "input": "/path/to/rc_ramp.stl", "output": "outputs/processed/repaired.stl" }
+    },
+    {
+      "tool": "scale_mesh",
+      "args": { "input": "outputs/processed/repaired.stl", "scale": 4, "output": "outputs/processed/scaled.stl" }
+    },
+    {
+      "tool": "split_mesh",
+      "args": {
+        "input": "outputs/processed/scaled.stl",
+        "buildVolume": [256, 256, 256],
+        "strategy": "min_parts",
+        "outputDir": "outputs/processed/split"
+      }
+    },
+    {
+      "tool": "add_dowel_connectors",
+      "args": {
+        "inputPartsDir": "outputs/processed/split",
+        "connector": {
+          "type": "dowel",
+          "diameterMm": 12,
+          "depthMm": 25,
+          "clearanceMm": 0.2,
+          "countPerSeam": 4
+        },
+        "outputDir": "outputs/stls"
+      }
+    },
+    {
+      "tool": "generate_assembly_manifest",
+      "note": "Generate from the split/connected parts",
+      "args": {
+        "parts": [],
+        "project": "rc_ramp_400pct",
+        "printer": "Bambu Lab X1E",
+        "scale": 4,
+        "outputFile": "outputs/manifests/assembly_manifest.json"
+      }
+    }
+  ],
+  "bambuStudioExport": {
+    "note": "For each part STL, create an individual 3MF with orient + arrange",
+    "perPartCommand": "BambuStudio <part.stl> --orient 1 --arrange 1 --allow-rotations --ensure-on-bed --export-3mf <part>.3mf --outputdir outputs/bambu/"
+  }
+}

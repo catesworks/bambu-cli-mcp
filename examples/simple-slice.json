@@ -1,0 +1,30 @@
+{
+  "name": "Simple Slice",
+  "description": "Convert an STL to 3MF and slice with default settings",
+  "steps": [
+    {
+      "tool": "convert_to_3mf",
+      "args": { "files": ["/path/to/model.stl"], "output": "model.3mf" }
+    },
+    {
+      "tool": "arrange_project",
+      "args": { "project": "model.3mf", "allowRotations": true, "ensureOnBed": true }
+    },
+    {
+      "tool": "orient_project",
+      "args": { "project": "model.3mf" }
+    },
+    {
+      "tool": "slice_project",
+      "args": {
+        "project": "model.3mf",
+        "plate": 0,
+        "settings": {
+          "machine": "profiles/printers/bambu_x1e.json",
+          "process": "profiles/process/petg_strong_030.json",
+          "filaments": ["profiles/filament/petg.json"]
+        }
+      }
+    }
+  ]
+}

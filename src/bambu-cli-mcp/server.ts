@@ -30,6 +30,12 @@ export function createBambuCliServer(): McpServer {
     version: "0.1.0",
   });
 
+  registerBambuCliTools(server);
+
+  return server;
+}
+
+export function registerBambuCliTools(server: McpServer): void {
   server.tool(
     "inspect_bambu_cli",
     "Returns BambuStudio CLI version, path, and available flags",
@@ -106,6 +112,4 @@ export function createBambuCliServer(): McpServer {
     CreatePrintPackageSchema.shape,
     async (params) => createPrintPackage(params),
   );
-
-  return server;
 }

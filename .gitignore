@@ -4,3 +4,7 @@ dist/
 .omc/
 /bambu-cli-mcp
 result.json
+docs-site/node_modules/
+docs-site/build/
+docs-site/.docusaurus/
+print-large-model.skill

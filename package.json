@@ -23,8 +23,16 @@
     "slicer",
     "bambu-studio"
   ],
-  "author": "",
+  "author": "Andrew Cates",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/catesandrew/bambu-cli-mcp.git"
+  },
+  "homepage": "https://catesandrew.github.io/bambu-cli-mcp",
+  "bugs": {
+    "url": "https://github.com/catesandrew/bambu-cli-mcp/issues"
+  },
   "engines": {
     "node": ">=20.0.0"
   },

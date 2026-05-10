@@ -1,0 +1,21 @@
+{
+  "name": "Inspect and Repair",
+  "description": "Inspect a mesh for issues, repair it, and lay it flat for printing",
+  "steps": [
+    {
+      "tool": "inspect_mesh",
+      "args": { "path": "/path/to/model.stl" },
+      "expect": "Returns bounds, triangle count, volume, watertight status, genus"
+    },
+    {
+      "tool": "repair_mesh",
+      "args": { "input": "/path/to/model.stl", "output": "repaired.stl" },
+      "expect": "Fixes normals, merges vertices, reports watertight before/after"
+    },
+    {
+      "tool": "lay_flat",
+      "args": { "input": "repaired.stl", "output": "ready_to_print.stl" },
+      "expect": "Rotates largest flat face to Z=0 plane"
+    }
+  ]
+}
