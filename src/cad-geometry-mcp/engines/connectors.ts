@@ -18,6 +18,7 @@ interface ManifoldInstance {
   rotate(v: Vec3): ManifoldInstance;
   add(other: ManifoldInstance): ManifoldInstance;
   subtract(other: ManifoldInstance): ManifoldInstance;
+  intersect(other: ManifoldInstance): ManifoldInstance;
   getMesh(): { numProp: number; vertProperties: Float32Array; triVerts: Uint32Array };
   delete(): void;
 }
@@ -33,6 +34,7 @@ interface ManifoldModule {
       circularSegments?: number,
       center?: boolean,
     ): ManifoldInstance;
+    sphere(radius: number, circularSegments?: number): ManifoldInstance;
   };
   Mesh: new (opts: {
     numProp: number;
@@ -277,41 +279,80 @@ export async function addDowelConnectors(
     const partB = parts.get(seam.partB);
     if (!partA || !partB) continue;
 
-    // Determine connector positions along the seam
-    const positions = distributeConnectors(
+    // Determine candidate connector positions along the seam
+    const candidates = distributeConnectors(
       seam,
       partA.manifold.boundingBox(),
       partB.manifold.boundingBox(),
       connector.countPerSeam,
     );
 
-    // For each connector position, create male (protrusion) and female (hole)
+    // Filter: only keep positions where both parts have actual mesh geometry
+    // Test by intersecting a small probe sphere at each position with both parts
+    const probeRadius = connector.diameterMm;
+    const validPositions: Vec3[] = [];
+
+    for (const pos of candidates) {
+      const probe = mod.Manifold.sphere(probeRadius, 8);
+      const probeAt = probe.translate(pos);
+
+      const hitA = partA.manifold.intersect(probeAt);
+      const hitB = partB.manifold.intersect(probeAt);
+
+      const aHasGeometry = !hitA.isEmpty() && hitA.volume() > 0.1;
+      const bHasGeometry = !hitB.isEmpty() && hitB.volume() > 0.1;
+
+      hitA.delete();
+      hitB.delete();
+      probeAt.delete();
+      probe.delete();
+
+      if (aHasGeometry && bHasGeometry) {
+        validPositions.push(pos);
+      }
+    }
+
+    if (validPositions.length === 0) continue;
+
+    // Place connectors at validated positions only
     const radius = connector.diameterMm / 2;
     const femaleRadius = radius + connector.clearanceMm;
     const depth = connector.depthMm;
-    const femaleDepth = depth + 1; // Extra depth for clearance
-
-    // Determine cylinder orientation based on seam normal
+    const femaleDepth = depth + 1;
     const normal = seam.plane.normal;
 
-    for (const pos of positions) {
-      // Create male cylinder (protrusion on part A)
+    for (const pos of validPositions) {
+      // Male: half depth into part A, half protruding toward B
+      const maleOffset: Vec3 = [
+        pos[0] - (normal[0] * depth) / 2,
+        pos[1] - (normal[1] * depth) / 2,
+        pos[2] - (normal[2] * depth) / 2,
+      ];
       const maleCyl = mod.Manifold.cylinder(depth, radius, radius, 32, false);
-      const orientedMale = orientCylinder(maleCyl, normal, pos);
-      partA.manifold = partA.manifold.add(orientedMale);
+      const orientedMale = orientCylinder(maleCyl, normal, maleOffset);
+      const newA = partA.manifold.add(orientedMale);
+      partA.manifold.delete();
+      partA.manifold = newA;
       orientedMale.delete();
 
-      // Create female cylinder (hole in part B)
+      // Female: hole into part B from the seam surface
+      const femaleOffset: Vec3 = [
+        pos[0],
+        pos[1],
+        pos[2],
+      ];
       const femaleCyl = mod.Manifold.cylinder(femaleDepth, femaleRadius, femaleRadius, 32, false);
-      const orientedFemale = orientCylinder(femaleCyl, normal, pos);
-      partB.manifold = partB.manifold.subtract(orientedFemale);
+      const orientedFemale = orientCylinder(femaleCyl, normal, femaleOffset);
+      const newB = partB.manifold.subtract(orientedFemale);
+      partB.manifold.delete();
+      partB.manifold = newB;
       orientedFemale.delete();
     }
 
     connectorResults.push({
       seam: seam.seam,
       type: connector.type,
-      positions,
+      positions: validPositions,
       malePartId: seam.partA,
       femalePartId: seam.partB,
     });

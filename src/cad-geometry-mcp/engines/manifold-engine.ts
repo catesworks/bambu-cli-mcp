@@ -216,6 +216,63 @@ export async function scaleMesh(
   }
 }
 
+/**
+ * Split a piece along its longest oversize axis at the midpoint.
+ * Returns two halves, filtering out empty results.
+ */
+function splitPieceByLongestAxis(
+  piece: ManifoldInstance,
+  buildVolume: Vec3,
+): ManifoldInstance[] {
+  const box = piece.boundingBox();
+  const size: Vec3 = [
+    box.max[0] - box.min[0],
+    box.max[1] - box.min[1],
+    box.max[2] - box.min[2],
+  ];
+
+  // Find the axis with the largest overshoot
+  const overshoot = [
+    size[0] / buildVolume[0],
+    size[1] / buildVolume[1],
+    size[2] / buildVolume[2],
+  ];
+  const axis = overshoot[0] >= overshoot[1] && overshoot[0] >= overshoot[2]
+    ? 0
+    : overshoot[1] >= overshoot[2]
+      ? 1
+      : 2;
+
+  const mid = (box.min[axis] + box.max[axis]) / 2;
+  const normal: Vec3 = [0, 0, 0];
+  normal[axis] = 1;
+
+  const [a, b] = piece.splitByPlane(normal, mid);
+  piece.delete();
+
+  const results: ManifoldInstance[] = [];
+  if (!a.isEmpty()) results.push(a); else a.delete();
+  if (!b.isEmpty()) results.push(b); else b.delete();
+  return results;
+}
+
+function pieceSize(piece: ManifoldInstance): Vec3 {
+  const box = piece.boundingBox();
+  return [
+    box.max[0] - box.min[0],
+    box.max[1] - box.min[1],
+    box.max[2] - box.min[2],
+  ];
+}
+
+function fitsInVolume(size: Vec3, buildVolume: Vec3): boolean {
+  return (
+    size[0] <= buildVolume[0] + 0.01 &&
+    size[1] <= buildVolume[1] + 0.01 &&
+    size[2] <= buildVolume[2] + 0.01
+  );
+}
+
 export async function splitMesh(
   inputPath: string,
   buildVolume: Vec3,
@@ -223,128 +280,98 @@ export async function splitMesh(
   strategy: "min_parts" | "grid" = "min_parts",
 ): Promise<SplitResult> {
   const { manifold } = await loadStlAsManifold(inputPath);
+  const { join } = await import("node:path");
 
-  try {
-    const box = manifold.boundingBox();
-    const size: Vec3 = [
-      box.max[0] - box.min[0],
-      box.max[1] - box.min[1],
-      box.max[2] - box.min[2],
-    ];
+  const size = pieceSize(manifold);
 
-    // Determine cuts needed per axis
-    const cutsX = Math.max(1, Math.ceil(size[0] / buildVolume[0]));
-    const cutsY = Math.max(1, Math.ceil(size[1] / buildVolume[1]));
-    const cutsZ = Math.max(1, Math.ceil(size[2] / buildVolume[2]));
-
-    if (cutsX === 1 && cutsY === 1 && cutsZ === 1) {
-      // Model already fits — just copy
-      const { join } = await import("node:path");
-      const outPath = join(outputDir, "part_A.stl");
-      await saveManifoldAsStl(manifold, outPath);
-      const b = boundsWithSize(manifold.boundingBox());
-      return {
-        parts: [{ id: "A", file: outPath, bounds: b, fitsVolume: true }],
-        totalParts: 1,
-        strategy,
-      };
-    }
-
-    // Split along each axis using splitByPlane
-    let pieces: ManifoldInstance[] = [manifold];
-
-    // Split along X axis
-    if (cutsX > 1) {
-      const stepX = size[0] / cutsX;
-      const newPieces: ManifoldInstance[] = [];
-      for (const piece of pieces) {
-        let remaining = piece;
-        for (let i = 1; i < cutsX; i++) {
-          const planeX = box.min[0] + i * stepX;
-          const [left, right] = remaining.splitByPlane([1, 0, 0], planeX);
-          newPieces.push(left);
-          remaining = right;
-        }
-        newPieces.push(remaining);
-      }
-      pieces = newPieces;
-    }
-
-    // Split along Y axis
-    if (cutsY > 1) {
-      const stepY = size[1] / cutsY;
-      const newPieces: ManifoldInstance[] = [];
-      for (const piece of pieces) {
-        let remaining = piece;
-        for (let i = 1; i < cutsY; i++) {
-          const planeY = box.min[1] + i * stepY;
-          const [front, back] = remaining.splitByPlane([0, 1, 0], planeY);
-          newPieces.push(front);
-          remaining = back;
-        }
-        newPieces.push(remaining);
-      }
-      pieces = newPieces;
-    }
-
-    // Split along Z axis
-    if (cutsZ > 1) {
-      const stepZ = size[2] / cutsZ;
-      const newPieces: ManifoldInstance[] = [];
-      for (const piece of pieces) {
-        let remaining = piece;
-        for (let i = 1; i < cutsZ; i++) {
-          const planeZ = box.min[2] + i * stepZ;
-          const [bottom, top] = remaining.splitByPlane([0, 0, 1], planeZ);
-          newPieces.push(bottom);
-          remaining = top;
-        }
-        newPieces.push(remaining);
-      }
-      pieces = newPieces;
-    }
-
-    // Export each piece
-    const { join } = await import("node:path");
-    const parts: SplitResult["parts"] = [];
-    const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    for (let i = 0; i < pieces.length; i++) {
-      const piece = pieces[i];
-      if (piece.isEmpty()) {
-        piece.delete();
-        continue;
-      }
-
-      const id = i < 26 ? labels[i] : `P${i}`;
-      const outPath = join(outputDir, `part_${id}.stl`);
-      await saveManifoldAsStl(piece, outPath);
-
-      const pBox = piece.boundingBox();
-      const pSize: Vec3 = [
-        pBox.max[0] - pBox.min[0],
-        pBox.max[1] - pBox.min[1],
-        pBox.max[2] - pBox.min[2],
-      ];
-      const fitsVolume =
-        pSize[0] <= buildVolume[0] &&
-        pSize[1] <= buildVolume[1] &&
-        pSize[2] <= buildVolume[2];
-
-      parts.push({
-        id,
-        file: outPath,
-        bounds: boundsWithSize(pBox),
-        fitsVolume,
-      });
-
-      piece.delete();
-    }
-
-    return { parts, totalParts: parts.length, strategy };
-  } finally {
-    // manifold already consumed by splits or deleted in parts loop
+  if (fitsInVolume(size, buildVolume)) {
+    const outPath = join(outputDir, "part_A.stl");
+    await saveManifoldAsStl(manifold, outPath);
+    const b = boundsWithSize(manifold.boundingBox());
+    manifold.delete();
+    return {
+      parts: [{ id: "A", file: outPath, bounds: b, fitsVolume: true }],
+      totalParts: 1,
+      strategy,
+    };
   }
+
+  // Initial grid split based on bounding box
+  const box = manifold.boundingBox();
+  const cutsX = Math.max(1, Math.ceil(size[0] / buildVolume[0]));
+  const cutsY = Math.max(1, Math.ceil(size[1] / buildVolume[1]));
+  const cutsZ = Math.max(1, Math.ceil(size[2] / buildVolume[2]));
+
+  let pieces: ManifoldInstance[] = [manifold];
+
+  // Grid split along each axis
+  for (const [axis, cuts] of [[0, cutsX], [1, cutsY], [2, cutsZ]] as [number, number][]) {
+    if (cuts <= 1) continue;
+    const step = size[axis] / cuts;
+    const newPieces: ManifoldInstance[] = [];
+    for (const piece of pieces) {
+      let remaining = piece;
+      for (let i = 1; i < cuts; i++) {
+        const planePos = box.min[axis] + i * step;
+        const normal: Vec3 = [0, 0, 0];
+        normal[axis] = 1;
+        const [left, right] = remaining.splitByPlane(normal, planePos);
+        if (!left.isEmpty()) newPieces.push(left); else left.delete();
+        remaining = right;
+      }
+      if (!remaining.isEmpty()) newPieces.push(remaining); else remaining.delete();
+    }
+    pieces = newPieces;
+  }
+
+  // Recursive re-split: keep halving oversized pieces until all fit
+  const MAX_ITERATIONS = 8;
+  for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
+    const oversized = pieces.filter((p) => !fitsInVolume(pieceSize(p), buildVolume));
+    if (oversized.length === 0) break;
+
+    const fitting = pieces.filter((p) => fitsInVolume(pieceSize(p), buildVolume));
+    const newPieces: ManifoldInstance[] = [...fitting];
+
+    for (const piece of oversized) {
+      const halves = splitPieceByLongestAxis(piece, buildVolume);
+      newPieces.push(...halves);
+    }
+
+    pieces = newPieces;
+  }
+
+  // Export each piece
+  const parts: SplitResult["parts"] = [];
+  const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let labelIndex = 0;
+
+  for (const piece of pieces) {
+    if (piece.isEmpty()) {
+      piece.delete();
+      continue;
+    }
+
+    const id = labelIndex < 26 ? labels[labelIndex] : `P${labelIndex}`;
+    labelIndex++;
+    const outPath = join(outputDir, `part_${id}.stl`);
+    await saveManifoldAsStl(piece, outPath);
+
+    const pBox = piece.boundingBox();
+    const pSize = pieceSize(piece);
+    const fits = fitsInVolume(pSize, buildVolume);
+
+    parts.push({
+      id,
+      file: outPath,
+      bounds: boundsWithSize(pBox),
+      fitsVolume: fits,
+    });
+
+    piece.delete();
+  }
+
+  return { parts, totalParts: parts.length, strategy };
 }
 
 export async function layFlat(
