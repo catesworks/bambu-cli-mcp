@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -16,20 +16,23 @@ jobs:
           - os: ubuntu-latest
             target: linux-x64
             artifact: bambu-cli-mcp-linux-x64
+            bun_args: ""
           - os: ubuntu-latest
             target: linux-arm64
             artifact: bambu-cli-mcp-linux-arm64
-            bun_args: --target=bun-linux-arm64
+            bun_args: "--target=bun-linux-arm64"
           - os: macos-latest
             target: darwin-x64
             artifact: bambu-cli-mcp-darwin-x64
-            bun_args: --target=bun-darwin-x64
+            bun_args: "--target=bun-darwin-x64"
           - os: macos-latest
             target: darwin-arm64
             artifact: bambu-cli-mcp-darwin-arm64
+            bun_args: ""
           - os: windows-latest
             target: windows-x64
             artifact: bambu-cli-mcp-windows-x64.exe
+            bun_args: ""
 
     runs-on: ${{ matrix.os }}
 
@@ -46,17 +49,18 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
       - name: Build single-file executable
-        run: bun build src/index.ts --compile --outfile ${{ matrix.artifact }} ${{ matrix.bun_args || '' }}
+        shell: bash
+        run: bun build src/index.ts --compile --outfile "${{ matrix.artifact }}" ${{ matrix.bun_args }}
 
       - name: Verify binary exists
         shell: bash
-        run: test -f "${{ matrix.artifact }}" && echo "OK: ${{ matrix.artifact }}"
+        run: test -f "${{ matrix.artifact }}" && echo "OK"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -74,7 +78,7 @@ jobs:
           path: artifacts
 
       - name: List artifacts
-        run: find artifacts -type f | head -20
+        run: find artifacts -type f
 
       - name: Create GitHub Release
         env:
