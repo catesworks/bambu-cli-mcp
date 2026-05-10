@@ -22,10 +22,12 @@ describe("bambu-studio-cli adapter", () => {
   });
 
   describe("findBambuStudio", () => {
-    it("finds BambuStudio at the default macOS path", async () => {
-      // This test runs on a system where BambuStudio is installed
-      const path = await findBambuStudio();
-      expect(path).toContain("BambuStudio");
-    });
+    it.skipIf(!process.env.BAMBU_STUDIO_PATH && process.platform !== "darwin")(
+      "finds BambuStudio at the default macOS path",
+      async () => {
+        const path = await findBambuStudio();
+        expect(path).toContain("BambuStudio");
+      },
+    );
   });
 });

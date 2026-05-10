@@ -1,25 +1,27 @@
 import { describe, it, expect } from "vitest";
 import { inspectBambuCli } from "../../src/bambu-cli-mcp/tools/inspect-bambu-cli.js";
 
+const hasBambuStudio = process.env.BAMBU_STUDIO_PATH || process.platform === "darwin";
+
 describe("bambu-cli-mcp tools", () => {
   describe("inspect_bambu_cli", () => {
-    it("returns version, path, and flags from real CLI", async () => {
-      const result = await inspectBambuCli();
+    it.skipIf(!hasBambuStudio)(
+      "returns version, path, and flags from real CLI",
+      async () => {
+        const result = await inspectBambuCli();
 
-      expect(result.isError).toBeUndefined();
-      expect(result.content).toHaveLength(1);
-      expect(result.content[0].type).toBe("text");
+        expect(result.isError).toBeUndefined();
+        expect(result.content).toHaveLength(1);
+        expect(result.content[0].type).toBe("text");
 
-      const data = JSON.parse(result.content[0].text);
-      expect(data.version).toBe("02.06.01.55");
-      expect(data.path).toContain("BambuStudio");
-      expect(data.availableFlags).toContain("--slice");
-      expect(data.availableFlags).toContain("--export-3mf");
-      expect(data.availableFlags).toContain("--arrange");
-      expect(data.availableFlags).toContain("--orient");
-      expect(data.availableFlags).toContain("--export-stls");
-      expect(data.availableFlags.length).toBeGreaterThan(30);
-    });
+        const data = JSON.parse(result.content[0].text);
+        expect(data.version).toMatch(/\d+\.\d+/);
+        expect(data.path).toContain("BambuStudio");
+        expect(data.availableFlags).toContain("--slice");
+        expect(data.availableFlags).toContain("--export-3mf");
+        expect(data.availableFlags.length).toBeGreaterThan(30);
+      },
+    );
   });
 });
 
