@@ -31,7 +31,7 @@ export async function estimatePrint(params: {
       "--slice",
       "0",
       "--export-3mf",
-      outputPath,
+      "estimated.3mf",
       "--outputdir",
       workspace.resolvePath("output"),
     );

@@ -16,7 +16,7 @@ export async function arrangeProject(params: {
       "--arrange",
       "1",
       "--export-3mf",
-      outputPath,
+      "arranged.3mf",
       "--outputdir",
       workspace.resolvePath("output"),
     ];

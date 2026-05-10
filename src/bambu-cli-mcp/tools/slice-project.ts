@@ -37,7 +37,7 @@ export async function sliceProject(params: {
       "--slice",
       String(plate),
       "--export-3mf",
-      outputPath,
+      outputName,
       "--outputdir",
       workspace.resolvePath("output"),
     );

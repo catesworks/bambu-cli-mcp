@@ -38,7 +38,7 @@ export async function createPrintPackage(params: {
       convertArgs.push("--ensure-on-bed");
     }
 
-    convertArgs.push("--export-3mf", projectPath, "--outputdir", outputDir);
+    convertArgs.push("--export-3mf", projectName, "--outputdir", outputDir);
     await runBambuStudio(convertArgs);
 
     // Step 2: Slice if settings provided
@@ -60,7 +60,7 @@ export async function createPrintPackage(params: {
         "--slice",
         "0",
         "--export-3mf",
-        slicedPath,
+        slicedName,
         "--outputdir",
         outputDir,
       );

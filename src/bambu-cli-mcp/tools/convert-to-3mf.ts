@@ -15,7 +15,7 @@ export async function convertTo3mf(params: {
     const args: string[] = [
       ...params.files,
       "--export-3mf",
-      outputPath,
+      outputName,
       "--outputdir",
       workspace.resolvePath("output"),
     ];

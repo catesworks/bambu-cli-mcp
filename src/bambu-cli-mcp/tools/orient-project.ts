@@ -14,7 +14,7 @@ export async function orientProject(params: {
       "--orient",
       "1",
       "--export-3mf",
-      outputPath,
+      "oriented.3mf",
       "--outputdir",
       workspace.resolvePath("output"),
     ];
