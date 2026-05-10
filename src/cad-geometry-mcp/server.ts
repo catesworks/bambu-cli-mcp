@@ -32,6 +32,12 @@ export function createCadGeometryServer(): McpServer {
     version: "0.1.0",
   });
 
+  registerCadGeometryTools(server);
+
+  return server;
+}
+
+export function registerCadGeometryTools(server: McpServer): void {
   // --- Core tools ---
 
   server.tool(
@@ -112,6 +118,4 @@ export function createCadGeometryServer(): McpServer {
     ListAvailableEnginesSchema.shape,
     async () => listAvailableEngines(),
   );
-
-  return server;
 }
