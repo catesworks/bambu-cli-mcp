@@ -1,0 +1,41 @@
+# codebase-memory-mcp graph excludes — supplements .gitignore, does not replace it
+
+# Lockfiles: huge, not source structure
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lockb
+
+# Agent / AI-tool session & state dirs — not source code
+.omc/
+.omx/
+.claude/
+.codex/
+.cursor/
+.sisyphus/
+.codebase-memory/
+
+# Generated/static output that isn't hand-authored structure
+storybook-static/
+.storybook-out/
+coverage/
+*.min.js
+*.map
+
+# Docs/content that's prose, not code structure (safe default; repos can override in their own .cbmignore)
+CHANGELOG.md
+
+# Python (present in at least one repo)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Infra state (terraform etc., in case not already gitignored)
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# OS/editor cruft as a backstop (usually already in .gitignore)
+.DS_Store
+*.swp
