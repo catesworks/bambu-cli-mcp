@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "bambu_cli_mcp",
+  "project_id": "8ff72353-44c8-4e67-b42c-fdae3e996e4d"
+}

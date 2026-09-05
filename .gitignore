@@ -8,3 +8,9 @@ docs-site/node_modules/
 docs-site/build/
 docs-site/.docusaurus/
 print-large-model.skill
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/proxieddb/
