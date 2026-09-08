@@ -21,15 +21,11 @@ jobs:
             target: linux-arm64
             artifact: bambu-cli-mcp-linux-arm64
             bun_args: "--target=bun-linux-arm64"
-          - os:
-              group: ci-runners
-              labels: [self-hosted, macOS, ARM64]
+          - os: macos-latest
             target: darwin-x64
             artifact: bambu-cli-mcp-darwin-x64
             bun_args: "--target=bun-darwin-x64"
-          - os:
-              group: ci-runners
-              labels: [self-hosted, macOS, ARM64]
+          - os: macos-latest
             target: darwin-arm64
             artifact: bambu-cli-mcp-darwin-arm64
             bun_args: ""

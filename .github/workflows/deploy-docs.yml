@@ -10,9 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    runs-on:
-      group: ci-runners
-      labels: [self-hosted, macOS, ARM64]
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: docs-site
