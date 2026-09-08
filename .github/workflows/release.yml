@@ -21,11 +21,15 @@ jobs:
             target: linux-arm64
             artifact: bambu-cli-mcp-linux-arm64
             bun_args: "--target=bun-linux-arm64"
-          - os: macos-latest
+          - os:
+              group: ci-runners
+              labels: [self-hosted, macOS, ARM64]
             target: darwin-x64
             artifact: bambu-cli-mcp-darwin-x64
             bun_args: "--target=bun-darwin-x64"
-          - os: macos-latest
+          - os:
+              group: ci-runners
+              labels: [self-hosted, macOS, ARM64]
             target: darwin-arm64
             artifact: bambu-cli-mcp-darwin-arm64
             bun_args: ""
@@ -49,7 +53,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile

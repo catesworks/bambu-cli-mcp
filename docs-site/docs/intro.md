@@ -24,7 +24,7 @@ BambuStudio must be installed so the CLI binary is available. The server auto-de
 ## Installation
 
 ```bash
-git clone https://github.com/catesandrew/bambu-cli-mcp.git
+git clone https://github.com/catesworks/bambu-cli-mcp.git
 cd bambu-cli-mcp
 pnpm install
 pnpm build

@@ -27,11 +27,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/catesandrew/bambu-cli-mcp.git"
+    "url": "https://github.com/catesworks/bambu-cli-mcp.git"
   },
-  "homepage": "https://catesandrew.github.io/bambu-cli-mcp",
+  "homepage": "https://bambu-cli-mcp-docs.vercel.app",
   "bugs": {
-    "url": "https://github.com/catesandrew/bambu-cli-mcp/issues"
+    "url": "https://github.com/catesworks/bambu-cli-mcp/issues"
   },
   "engines": {
     "node": ">=20.0.0"

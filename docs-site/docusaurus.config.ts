@@ -13,10 +13,10 @@ const config: Config = {
     v4: true,
   },
 
-  url: 'https://catesandrew.github.io',
-  baseUrl: '/bambu-cli-mcp/',
+  url: 'https://bambu-cli-mcp-docs.vercel.app',
+  baseUrl: '/',
 
-  organizationName: 'catesandrew',
+  organizationName: 'catesworks',
   projectName: 'bambu-cli-mcp',
   trailingSlash: false,
 
@@ -33,7 +33,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/catesandrew/bambu-cli-mcp/tree/main/docs-site/',
+          editUrl: 'https://github.com/catesworks/bambu-cli-mcp/tree/main/docs-site/',
         },
         blog: false,
         theme: {
@@ -62,7 +62,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/catesandrew/bambu-cli-mcp',
+          href: 'https://github.com/catesworks/bambu-cli-mcp',
           label: 'GitHub',
           position: 'right',
         },
@@ -106,7 +106,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/catesandrew/bambu-cli-mcp',
+              href: 'https://github.com/catesworks/bambu-cli-mcp',
             },
           ],
         },

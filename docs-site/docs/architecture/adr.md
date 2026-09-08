@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Architecture Decision Records
 
-This page indexes the architecture decisions for bambu-cli-mcp. Each ADR records the context, decision, and consequences for a key design choice. The full documents live in [`docs/adr/`](https://github.com/catesandrew/bambu-cli-mcp/tree/main/docs/adr) in the repository.
+This page indexes the architecture decisions for bambu-cli-mcp. Each ADR records the context, decision, and consequences for a key design choice. The full documents live in [`docs/adr/`](https://github.com/catesworks/bambu-cli-mcp/tree/main/docs/adr) in the repository.
 
 ## ADR-001: pnpm Monorepo
 
@@ -12,7 +12,7 @@ This page indexes the architecture decisions for bambu-cli-mcp. Each ADR records
 
 The two MCP servers (`bambu-cli-mcp` and `cad-geometry-mcp`) share tooling, TypeScript config, and build scripts. A pnpm monorepo with `workspace:*` protocol keeps them versioned together without publishing to npm. Hoisted dependencies reduce total `node_modules` size.
 
-[View ADR-001](https://github.com/catesandrew/bambu-cli-mcp/tree/main/docs/adr/001-pnpm-monorepo.md)
+[View ADR-001](https://github.com/catesworks/bambu-cli-mcp/tree/main/docs/adr/001-pnpm-monorepo.md)
 
 ---
 
@@ -22,7 +22,7 @@ The two MCP servers (`bambu-cli-mcp` and `cad-geometry-mcp`) share tooling, Type
 
 Python-based solutions (trimesh, Open3D, FreeCAD scripting) require a Python runtime, add subprocess overhead, and introduce a second language to maintain. manifold-3d compiles to WASM and loads directly into the Node.js MCP server process, eliminating the Python dependency and IPC latency while providing stronger manifold guarantees than trimesh's pure-Python repair.
 
-[View ADR-002](https://github.com/catesandrew/bambu-cli-mcp/tree/main/docs/adr/002-nodejs-geometry-worker.md)
+[View ADR-002](https://github.com/catesworks/bambu-cli-mcp/tree/main/docs/adr/002-nodejs-geometry-worker.md)
 
 ---
 
@@ -32,7 +32,7 @@ Python-based solutions (trimesh, Open3D, FreeCAD scripting) require a Python run
 
 Bun's bundler produces a self-contained bundle with all dependencies inlined, enabling fast cold starts and simple deployment (copy `dist/index.js`, run with Node.js). This is particularly important for MCP servers which are spawned on demand by the client.
 
-[View ADR-003](https://github.com/catesandrew/bambu-cli-mcp/tree/main/docs/adr/003-bun-compilation-target.md)
+[View ADR-003](https://github.com/catesworks/bambu-cli-mcp/tree/main/docs/adr/003-bun-compilation-target.md)
 
 ---
 
@@ -42,7 +42,7 @@ Bun's bundler produces a self-contained bundle with all dependencies inlined, en
 
 A single monolithic MCP server would couple the BambuStudio CLI dependency to the geometry engine. Separating them allows users who only need geometry operations to run without BambuStudio installed, and vice versa. The `--server` flag keeps configuration simple for users who want both.
 
-[View ADR-004](https://github.com/catesandrew/bambu-cli-mcp/tree/main/docs/adr/004-mcp-server-architecture.md)
+[View ADR-004](https://github.com/catesworks/bambu-cli-mcp/tree/main/docs/adr/004-mcp-server-architecture.md)
 
 ---
 
@@ -52,7 +52,7 @@ A single monolithic MCP server would couple the BambuStudio CLI dependency to th
 
 WASM module instantiation has non-trivial startup cost (~200–400 ms). Loading once and caching the instance reduces per-call latency to near-zero for the WASM init phase. The manifold-3d API is stateless per operation (meshes are value types), so reuse is safe.
 
-[View ADR-005](https://github.com/catesandrew/bambu-cli-mcp/tree/main/docs/adr/005-manifold-wasm-patterns.md)
+[View ADR-005](https://github.com/catesworks/bambu-cli-mcp/tree/main/docs/adr/005-manifold-wasm-patterns.md)
 
 ---
 
@@ -62,4 +62,4 @@ WASM module instantiation has non-trivial startup cost (~200–400 ms). Loading 
 
 Primitive tools (translate, rotate, boolean) require many LLM round-trips to accomplish common tasks. Workflow tools encode domain knowledge (seam detection, connector placement, multi-part packaging) that would otherwise require the LLM to reason through geometry details. Both layers are exposed so simple tasks use primitives and complex pipelines use workflows.
 
-[View ADR-006](https://github.com/catesandrew/bambu-cli-mcp/tree/main/docs/adr/006-workflow-orchestration-tools.md)
+[View ADR-006](https://github.com/catesworks/bambu-cli-mcp/tree/main/docs/adr/006-workflow-orchestration-tools.md)

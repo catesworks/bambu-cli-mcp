@@ -4,7 +4,7 @@ AI-native 3D printing pipelines via [MCP](https://modelcontextprotocol.io). Turn
 
 Two MCP servers expose 22 tools that chain mesh geometry operations and BambuStudio CLI orchestration into declarative manufacturing workflows — from STL to sliced, split, connector-equipped 3MF projects.
 
-**[Documentation](https://catesandrew.github.io/bambu-cli-mcp)** | **[Architecture Decisions](docs/adr/)** | **[Examples](examples/)**
+**[Documentation](https://bambu-cli-mcp-docs.vercel.app)** | **[Architecture Decisions](docs/adr/)** | **[Examples](examples/)**
 
 ## What it does
 
@@ -39,7 +39,7 @@ Two MCP servers expose 22 tools that chain mesh geometry operations and BambuStu
 ### Install
 
 ```bash
-git clone https://github.com/catesandrew/bambu-cli-mcp.git
+git clone https://github.com/catesworks/bambu-cli-mcp.git
 cd bambu-cli-mcp
 pnpm install
 pnpm build

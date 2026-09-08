@@ -25,7 +25,7 @@ function HomepageHeader() {
           <Link
             className="button button--outline button--secondary button--lg"
             style={{marginLeft: '1rem'}}
-            href="https://github.com/catesandrew/bambu-cli-mcp">
+            href="https://github.com/catesworks/bambu-cli-mcp">
             GitHub
           </Link>
         </div>
