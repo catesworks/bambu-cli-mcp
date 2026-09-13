@@ -1,0 +1,29 @@
+name: vercel-deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy target'
+        type: choice
+        options: [production, preview]
+        default: production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs-site
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Vercel
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            npx vercel --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }} --yes
+          else
+            npx vercel --token=${{ secrets.VERCEL_ACCESS_TOKEN }} --yes
+          fi
