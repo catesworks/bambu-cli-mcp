@@ -4,5 +4,5 @@
   "rewrites": [
     { "source": "/", "destination": "/index.html" }
   ],
-  "git": { "deploymentEnabled": { "*": false, "**": false, "main": false } }
+  "git": { "deploymentEnabled": false }
 }
