@@ -1,5 +1,7 @@
 # bambu-cli-mcp
 
+**Topics:** `vercel` `cli` `mcp`
+
 AI-native 3D printing pipelines via [MCP](https://modelcontextprotocol.io). Turn natural language into print-ready manufacturing packages.
 
 Two MCP servers expose 22 tools that chain mesh geometry operations and BambuStudio CLI orchestration into declarative manufacturing workflows — from STL to sliced, split, connector-equipped 3MF projects.
