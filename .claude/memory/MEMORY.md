@@ -1,0 +1,3 @@
+- [User profile](user_profile.md) — 3D printing engineer, Bambu X1E, prefers pnpm/bun, TypeScript-first
+- [manifold-3d setup](feedback_manifold_setup.md) — WASM module requires mod.setup() after init for static methods + Mesh class
+- [Project vision](project_vision.md) — AI-native manufacturing pipelines, declarative manufacturing orchestration, future features roadmap
