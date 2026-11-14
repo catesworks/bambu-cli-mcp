@@ -14,6 +14,8 @@ interface ManifestConnector {
   diameterMm?: number;
   depthMm?: number;
   clearanceMm?: number;
+  outerDiameterMm?: number;
+  screwDiameterMm?: number;
   count?: number;
 }
 

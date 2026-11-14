@@ -1,5 +1,32 @@
 import { z } from "zod";
 
+const DowelConnectorSchema = z.object({
+  type: z.literal("dowel"),
+  diameterMm: z.number().positive().describe("Dowel diameter in mm"),
+  depthMm: z.number().positive().describe("Dowel depth in mm"),
+  clearanceMm: z.number().positive().describe("Clearance for female side in mm"),
+  countPerSeam: z.number().int().positive().describe("Number of connectors per seam"),
+});
+
+const HeatInsertConnectorSchema = z
+  .object({
+    type: z.literal("heat_insert"),
+    outerDiameterMm: z.number().positive().describe("Heat-set insert outer diameter in mm (pocket diameter)"),
+    depthMm: z.number().positive().describe("Insert pocket depth in mm"),
+    screwDiameterMm: z
+      .number()
+      .positive()
+      .describe("Screw diameter in mm; must be smaller than outerDiameterMm"),
+    clearanceMm: z.number().positive().describe("Clearance added to the screw hole radius in mm"),
+    countPerSeam: z.number().int().positive().describe("Number of connectors per seam"),
+  })
+  .refine((v) => v.screwDiameterMm < v.outerDiameterMm, {
+    message: "screwDiameterMm must be smaller than outerDiameterMm",
+    path: ["screwDiameterMm"],
+  });
+
+const ConnectorSchema = z.discriminatedUnion("type", [DowelConnectorSchema, HeatInsertConnectorSchema]);
+
 export const InspectMeshSchema = z.object({
   path: z.string().describe("Path to STL file to inspect"),
 });
@@ -53,6 +80,8 @@ export const GenerateAssemblyManifestSchema = z.object({
         diameterMm: z.number().optional(),
         depthMm: z.number().optional(),
         clearanceMm: z.number().optional(),
+        outerDiameterMm: z.number().optional(),
+        screwDiameterMm: z.number().optional(),
         count: z.number().optional(),
       }),
     )
@@ -88,16 +117,7 @@ export const MakePrintableLargeModelSchema = z.object({
   buildVolume: z
     .tuple([z.number(), z.number(), z.number()])
     .describe("Printer build volume [x, y, z] in mm"),
-  connector: z
-    .object({
-      type: z.literal("dowel"),
-      diameterMm: z.number().positive(),
-      depthMm: z.number().positive(),
-      clearanceMm: z.number().positive(),
-      countPerSeam: z.number().int().positive(),
-    })
-    .optional()
-    .describe("Connector spec (omit to skip connectors)"),
+  connector: ConnectorSchema.optional().describe("Connector spec (omit to skip connectors)"),
   outputDir: z.string().describe("Directory for output files"),
 });
 
@@ -111,13 +131,7 @@ export const SplitWithConnectorsSchema = z.object({
   buildVolume: z
     .tuple([z.number(), z.number(), z.number()])
     .describe("Build volume [x, y, z] in mm"),
-  connector: z.object({
-    type: z.literal("dowel"),
-    diameterMm: z.number().positive(),
-    depthMm: z.number().positive(),
-    clearanceMm: z.number().positive(),
-    countPerSeam: z.number().int().positive(),
-  }),
+  connector: ConnectorSchema,
   outputDir: z.string().describe("Directory for output files"),
 });
 
