@@ -241,6 +241,7 @@ src/
     server.ts, tools/, adapters/, schemas/
   cad-geometry-mcp/                 # Geometry engine
     server.ts, tools/, engines/, schemas/
+  cross-server-workflows/           # Workflows that need both tool sets
   shared/                           # Workspace, errors, types
 test/                               # Vitest tests
 docs/adr/                           # 6 architecture decision records
