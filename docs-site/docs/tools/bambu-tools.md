@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # BambuStudio Tools
 
-The `bambu-cli-mcp` server exposes 11 tools that wrap the BambuStudio CLI. Each tool runs BambuStudio as a subprocess via `execa` and returns structured output.
+The `bambu-cli-mcp` server exposes 11 tools that wrap the BambuStudio CLI. Each tool runs BambuStudio as a subprocess via `execa` and returns structured output. All of them operate on local files: there is no live printer, print-queue or cloud control.
 
 ## CLI Path Detection
 
@@ -12,8 +12,9 @@ The server searches these locations in order:
 
 1. `BAMBU_STUDIO_PATH` environment variable (full path to the binary)
 2. `/Applications/BambuStudio.app/Contents/MacOS/BambuStudio` (macOS)
-3. `C:\Program Files\Bambu Studio\BambuStudio.exe` (Windows)
-4. `bambu-studio` on `PATH` (Linux)
+3. `/usr/local/bin/bambu-studio`
+4. `/usr/bin/bambu-studio`
+5. `bambu-studio` on `PATH` (found with `which`)
 
 Set `BAMBU_STUDIO_PATH` to override auto-detection:
 
@@ -25,125 +26,120 @@ export BAMBU_STUDIO_PATH="/custom/path/to/BambuStudio"
 
 | Tool | Description |
 |---|---|
-| `slice_model` | Slice an STL/3MF with a given printer profile, producing G-code |
-| `arrange_models` | Auto-arrange multiple models on the build plate |
-| `orient_model` | Auto-orient a model for optimal printability |
-| `export_3mf` | Export a project to a 3MF archive |
-| `import_3mf` | Import a 3MF file and inspect its contents |
-| `set_print_settings` | Apply print settings (layer height, infill, supports) to a project |
-| `get_print_settings` | Read current print settings from a project |
-| `list_profiles` | List available printer and filament profiles |
-| `validate_model` | Check a model for sliceability issues |
-| `get_slice_preview` | Generate a slice preview image |
-| `repair_model` | Run BambuStudio's built-in mesh repair |
+| `inspect_bambu_cli` | Return the BambuStudio version, binary path and available CLI flags |
+| `export_settings` | Export BambuStudio settings (optionally from a `.3mf` project) to JSON |
+| `convert_to_3mf` | Convert STL/OBJ files into a `.3mf` project |
+| `arrange_project` | Auto-arrange objects on the build plate |
+| `orient_project` | Auto-orient objects for printing |
+| `slice_project` | Slice a project with machine/process/filament settings |
+| `export_plate_png` | Export PNG preview images of plates |
+| `export_stls` | Export the objects in a project as individual STL files |
+| `validate_project` | Validate a project and report info and warnings |
+| `estimate_print` | Estimate print time and filament usage |
+| `create_print_package` | Full pipeline: convert, arrange, orient, slice, preview |
 
 ## Examples
 
-### slice_model
+### convert_to_3mf
 
 ```json
 {
-  "name": "slice_model",
+  "name": "convert_to_3mf",
   "arguments": {
-    "input": "/models/part_a.stl",
-    "output": "/output/part_a.gcode",
-    "profile": "Bambu Lab P1S 0.4 nozzle",
-    "filament": "Bambu PLA Basic @BBL P1S"
+    "files": ["/models/part_0.stl", "/models/part_1.stl"],
+    "output": "ramp.3mf"
   }
 }
 ```
 
-### arrange_models
+### arrange_project
 
 ```json
 {
-  "name": "arrange_models",
+  "name": "arrange_project",
   "arguments": {
-    "inputs": [
-      "/models/part_a.stl",
-      "/models/part_b.stl"
-    ],
-    "output": "/output/arranged.3mf",
-    "printer": "Bambu Lab P1S"
+    "project": "/models/ramp.3mf",
+    "allowRotations": true,
+    "ensureOnBed": true
   }
 }
 ```
 
-### orient_model
+### orient_project
 
 ```json
 {
-  "name": "orient_model",
+  "name": "orient_project",
   "arguments": {
-    "input": "/models/ramp.stl",
-    "output": "/output/ramp_oriented.stl"
+    "project": "/models/ramp.3mf"
   }
 }
 ```
 
-### export_3mf
+### slice_project
 
 ```json
 {
-  "name": "export_3mf",
+  "name": "slice_project",
   "arguments": {
-    "input": "/projects/ramp.bbproject",
-    "output": "/output/ramp.3mf"
+    "project": "/models/ramp.3mf",
+    "plate": 0,
+    "settings": {
+      "machine": "profiles/printers/bambu_x1e.json",
+      "process": "profiles/process/petg_strong_030.json",
+      "filaments": ["profiles/filament/petg.json"]
+    }
   }
 }
 ```
 
-### set_print_settings
+`plate: 0` slices every plate; a positive number slices only that plate.
+
+### export_plate_png
 
 ```json
 {
-  "name": "set_print_settings",
+  "name": "export_plate_png",
   "arguments": {
-    "project": "/projects/ramp.bbproject",
-    "layer_height": 0.2,
-    "infill_density": 40,
-    "supports": true,
-    "support_type": "tree"
+    "project": "/models/ramp.3mf",
+    "plate": 1,
+    "cameraView": 0
   }
 }
 ```
 
-### list_profiles
+`cameraView`: `0` = Iso, `1` = Top_Front, `2` = Left, `3` = Right, `10`-`12` = Iso variants.
+
+### estimate_print
 
 ```json
 {
-  "name": "list_profiles",
+  "name": "estimate_print",
   "arguments": {
-    "type": "printer"
+    "project": "/models/ramp.3mf",
+    "settings": {
+      "machine": "profiles/printers/bambu_x1e.json",
+      "process": "profiles/process/petg_strong_030.json"
+    }
   }
 }
 ```
 
-Returns an array of profile name strings available in the local BambuStudio installation.
-
-### validate_model
+### create_print_package
 
 ```json
 {
-  "name": "validate_model",
+  "name": "create_print_package",
   "arguments": {
-    "input": "/models/part_a.stl"
+    "files": ["/models/part_0.stl", "/models/part_1.stl"],
+    "settings": {
+      "machine": "profiles/printers/bambu_x1e.json",
+      "process": "profiles/process/petg_strong_030.json",
+      "filaments": ["profiles/filament/petg.json"]
+    },
+    "arrange": true,
+    "orient": true,
+    "output": "ramp_package.3mf"
   }
 }
 ```
-
-Returns `{ "valid": true }` or `{ "valid": false, "issues": ["non-manifold edges at ..."] }`.
-
-### repair_model
-
-```json
-{
-  "name": "repair_model",
-  "arguments": {
-    "input": "/models/broken.stl",
-    "output": "/models/repaired.stl"
-  }
-}
-```
-
-Uses BambuStudio's built-in repair. For more advanced repair, use the geometry server's `repair_mesh` tool which uses manifold-3d.
