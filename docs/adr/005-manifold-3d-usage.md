@@ -3,11 +3,13 @@
 ## Status
 Accepted
 
+> **Correction (2026-11-14):** The Context list and the tool list originally said `scale_mesh` scales "uniformly or per-axis". The implementation (`ScaleMeshSchema` and `scaleMesh()` in `src/cad-geometry-mcp/`) is uniform-only: one `scale` factor applied to all three axes. Both lines are corrected below. Per-axis scaling is an open decision (bead bambu-cli-mcp-bpw).
+
 ## Context
 The cad-geometry-mcp server requires mesh processing capabilities for Phase 1-3 operations:
 - Inspect mesh topology, vertices, and faces
 - Repair invalid or corrupted meshes
-- Scale meshes uniformly or per-axis
+- Scale meshes uniformly by any factor
 - Split meshes by plane for grid-based splitting
 - Generate boolean connectors (union, difference operations)
 
@@ -179,7 +181,7 @@ Callers retrieve the module via `getManifoldModule()` rather than initializing r
 - `repair_mesh`: Boolean union with self or filtered components
 
 **Phase 2**:
-- `scale_mesh`: Scale by factor or per-axis
+- `scale_mesh`: Scale uniformly by a single factor
 - `split_mesh`: Split by plane for grid tiling
 - `lay_flat`: Rotate mesh so largest face aligns with XY plane
 
