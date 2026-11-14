@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { inspectBambuCli } from "../../src/bambu-cli-mcp/tools/inspect-bambu-cli.js";
+import { hasBambuStudio } from "../helpers/has-bambu-studio.js";
 
-const hasBambuStudio = process.env.BAMBU_STUDIO_PATH || process.platform === "darwin";
 
 describe("bambu-cli-mcp tools", () => {
   describe("inspect_bambu_cli", () => {
