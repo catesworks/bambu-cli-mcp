@@ -13,6 +13,7 @@ import {
   createCadGeometryServer,
   registerCadGeometryTools,
 } from "./cad-geometry-mcp/server.js";
+import { registerCrossServerWorkflowTools } from "./cross-server-workflows/server.js";
 
 export type ServerMode = "bambu" | "geometry" | "both";
 
@@ -31,6 +32,7 @@ export function createCombinedServer(): McpServer {
 
   registerBambuCliTools(server);
   registerCadGeometryTools(server);
+  registerCrossServerWorkflowTools(server);
 
   return server;
 }
