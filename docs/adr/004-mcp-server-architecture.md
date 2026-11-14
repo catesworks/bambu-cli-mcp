@@ -5,6 +5,8 @@ Accepted
 
 > **Correction (2026-11-14):** The original "Server 1: bambu-cli-mcp" scope draft listed live device and print-queue control (query device status, list connected devices, export to device, get/cancel/pause/resume print jobs, get/set device settings). None of that was implemented, and it is an explicit non-goal: this project is a local-file/BambuStudio-CLI wrapper, not a live printer or cloud integration, so live control is out of scope rather than postponed. The Context section and the tool list below now name the 11 implemented tools (`src/bambu-cli-mcp/server.ts`). The original draft is in git history (`git log -p -- docs/adr/004-mcp-server-architecture.md`).
 
+> **Correction (2026-11-14):** The Server 2 list said "Scale mesh (uniform or per-axis)". `scale_mesh` is uniform-only (one `scale` factor for all three axes); corrected below. Per-axis scaling is an open decision (bead bambu-cli-mcp-bpw).
+
 ## Context
 The project needs to expose two logically distinct sets of MCP tools:
 
@@ -206,7 +208,7 @@ bun build --compile ./packages/cad-geometry-mcp/dist/index.js
 - Inspect mesh (vertices, faces, topology)
 - Validate mesh (check for errors)
 - Repair mesh (fix invalid topology)
-- Scale mesh (uniform or per-axis)
+- Scale mesh (uniform, any factor)
 - Translate/rotate mesh (transformations)
 - Split mesh (partition into components)
 - Boolean operations: union, difference, intersection
