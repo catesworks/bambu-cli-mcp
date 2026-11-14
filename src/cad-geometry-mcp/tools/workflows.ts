@@ -1,5 +1,5 @@
 import { inspectMesh, repairMesh, scaleMesh, splitMesh, layFlat } from "../engines/manifold-engine.js";
-import { addDowelConnectors, type ConnectorSpec } from "../engines/connectors.js";
+import { addConnectors, type ConnectorSpec } from "../engines/connectors.js";
 import { detectAllEngines } from "../engines/cad-subprocess.js";
 import { handleToolError } from "../../shared/errors.js";
 import { toolResult } from "../../shared/types.js";
@@ -11,13 +11,7 @@ export async function makePrintableLargeModel(params: {
   input: string;
   scale: number;
   buildVolume: [number, number, number];
-  connector?: {
-    type: "dowel";
-    diameterMm: number;
-    depthMm: number;
-    clearanceMm: number;
-    countPerSeam: number;
-  };
+  connector?: ConnectorSpec;
   outputDir: string;
 }) {
   const workspace = await Workspace.create();
@@ -49,7 +43,7 @@ export async function makePrintableLargeModel(params: {
     if (params.connector && splitResult.totalParts > 1) {
       const connectedDir = workspace.resolvePath("processed") + "/connected";
       await mkdir(connectedDir, { recursive: true });
-      connectorResult = await addDowelConnectors(
+      connectorResult = await addConnectors(
         splitDir,
         connectedDir,
         params.connector,
@@ -176,7 +170,7 @@ export async function splitWithConnectors(params: {
     let connectorResult = null;
 
     if (splitResult.totalParts > 1) {
-      connectorResult = await addDowelConnectors(
+      connectorResult = await addConnectors(
         splitDir,
         connectedDir,
         params.connector,
