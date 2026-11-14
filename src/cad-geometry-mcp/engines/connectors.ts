@@ -226,15 +226,17 @@ function findSharedPlane(
   return null;
 }
 
-// --- Dowel Connector Generation ---
+// --- Connector Generation ---
 
-export interface ConnectorSpec {
+export interface DowelSpec {
   type: "dowel";
   diameterMm: number;
   depthMm: number;
   clearanceMm: number;
   countPerSeam: number;
 }
+
+export type ConnectorSpec = DowelSpec;
 
 export interface ConnectorResult {
   seam: string;
@@ -251,7 +253,7 @@ export interface ConnectorResult {
 export async function addDowelConnectors(
   partsDir: string,
   outputDir: string,
-  connector: ConnectorSpec,
+  connector: DowelSpec,
 ): Promise<{
   parts: Array<{ id: string; file: string }>;
   connectors: ConnectorResult[];
@@ -370,6 +372,25 @@ export async function addDowelConnectors(
   return { parts: outputParts, connectors: connectorResults };
 }
 
+/** Add connectors of any supported type, dispatching on `connector.type`. */
+export async function addConnectors(
+  partsDir: string,
+  outputDir: string,
+  connector: ConnectorSpec,
+): Promise<{
+  parts: Array<{ id: string; file: string }>;
+  connectors: ConnectorResult[];
+}> {
+  switch (connector.type) {
+    case "dowel":
+      return addDowelConnectors(partsDir, outputDir, connector);
+  }
+}
+
+/**
+ * Rotate a Z-axis cylinder onto `normal` and move its base to `position`; it
+ * extends along +normal. Takes ownership of `cylinder` and deletes it.
+ */
 function orientCylinder(
   cylinder: ManifoldInstance,
   normal: Vec3,
@@ -391,6 +412,7 @@ function orientCylinder(
 
   const translated = rotated.translate(position);
   if (rotated !== cylinder) rotated.delete();
+  cylinder.delete();
   return translated;
 }
 

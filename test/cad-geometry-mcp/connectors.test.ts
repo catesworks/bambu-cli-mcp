@@ -4,7 +4,7 @@ import { writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { generateTestCubeStl } from "../helpers/generate-test-cube.js";
 import { scaleMesh, splitMesh, inspectMesh } from "../../src/cad-geometry-mcp/engines/manifold-engine.js";
-import { detectSeams, addDowelConnectors } from "../../src/cad-geometry-mcp/engines/connectors.js";
+import { detectSeams, addDowelConnectors, addConnectors } from "../../src/cad-geometry-mcp/engines/connectors.js";
 
 const testDir = join(tmpdir(), "bambu-mcp-connector-test");
 const cubeStl = join(testDir, "cube.stl");
@@ -66,5 +66,25 @@ describe("dowel connectors", () => {
       const info = await inspectMesh(part.file);
       expect(info.triangleCount).toBeGreaterThan(12); // More triangles than original cube
     }
+  });
+});
+
+describe("addConnectors dispatcher", () => {
+  it("routes the dowel type to the same result addDowelConnectors produces", async () => {
+    const spec = {
+      type: "dowel" as const,
+      diameterMm: 4,
+      depthMm: 8,
+      clearanceMm: 0.2,
+      countPerSeam: 1,
+    };
+    const directDir = join(testDir, "direct");
+    const dispatchedDir = join(testDir, "dispatched");
+    mkdirSync(directDir, { recursive: true });
+    mkdirSync(dispatchedDir, { recursive: true });
+    const direct = await addDowelConnectors(splitDir, directDir, spec);
+    const dispatched = await addConnectors(splitDir, dispatchedDir, spec);
+    expect(dispatched.connectors.length).toBe(direct.connectors.length);
+    expect(dispatched.parts.length).toBe(direct.parts.length);
   });
 });
