@@ -4,7 +4,7 @@
 
 AI-native 3D printing pipelines via [MCP](https://modelcontextprotocol.io). Turn natural language into print-ready manufacturing packages.
 
-Two MCP servers expose 22 tools that chain mesh geometry operations and BambuStudio CLI orchestration into declarative manufacturing workflows — from STL to sliced, split, connector-equipped 3MF projects.
+Two MCP servers expose 22 tools (plus 2 cross-server workflows in `--server both` mode) that chain mesh geometry operations and BambuStudio CLI orchestration into declarative manufacturing workflows — from STL to sliced, split, connector-equipped 3MF projects.
 
 **[Documentation](https://bambu-cli-mcp-docs.vercel.app)** | **[Architecture Decisions](docs/adr/)** | **[Examples](examples/)**
 
@@ -81,7 +81,7 @@ The `--server` flag selects which tools to load:
 |------|-------|----------|
 | `bambu` | 11 BambuStudio tools | Slicing and export only |
 | `geometry` | 11 geometry tools | Mesh processing only |
-| `both` | All 22 tools | Full pipeline |
+| `both` | All 22 tools + 2 cross-server workflows | Full pipeline |
 
 ## Tools
 
@@ -123,6 +123,13 @@ The `--server` flag selects which tools to load:
 | `repair_and_prepare` | inspect -> repair -> lay flat |
 | `split_with_connectors` | split -> connectors -> manifest |
 | `list_available_engines` | Detect available CAD engines |
+
+### Cross-Server Workflows (2, `--server both` only)
+
+| Tool | Description |
+|------|-------------|
+| `repair_and_slice` | inspect -> repair -> convert to 3MF -> arrange -> orient -> slice |
+| `estimate_and_package` | convert -> arrange -> orient -> estimate -> slice -> PNG previews -> package with `manifest.json` |
 
 ## Examples
 
@@ -219,7 +226,7 @@ See [Architecture Decision Records](docs/adr/) for full rationale.
 ## Development
 
 ```bash
-pnpm test          # 29 tests across 7 files
+pnpm test          # Vitest suite (2 tests need a local BambuStudio install)
 pnpm build         # TypeScript compilation
 pnpm run lint      # Type checking (tsc --noEmit)
 pnpm run dev       # Watch mode
@@ -235,7 +242,7 @@ src/
   cad-geometry-mcp/                 # Geometry engine
     server.ts, tools/, engines/, schemas/
   shared/                           # Workspace, errors, types
-test/                               # 7 test files, 29 tests
+test/                               # Vitest tests
 docs/adr/                           # 6 architecture decision records
 examples/                           # Workflow JSON examples
 profiles/                           # Printer/process/filament configs

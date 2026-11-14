@@ -52,9 +52,9 @@ Add to your MCP client config (e.g. Claude Desktop `claude_desktop_config.json`)
 
 | Value | What starts |
 |---|---|
-| `bambu` | BambuStudio CLI tools only |
+| `bambu` | BambuStudio CLI tools only (default when `--server` is omitted or unrecognized) |
 | `geometry` | Mesh geometry tools only |
-| `both` | Both servers (default) |
+| `both` | Both tool sets plus the cross-server workflows `repair_and_slice` and `estimate_and_package` |
 
 Use `--server both` for full pipeline capability. Use individual values if you only need one set of tools or want to run the servers as separate processes.
 
