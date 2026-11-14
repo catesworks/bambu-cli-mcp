@@ -3,6 +3,7 @@ import {
   findBambuStudio,
   parseBambuVersion,
 } from "../../src/bambu-cli-mcp/adapters/bambu-studio-cli.js";
+import { hasBambuStudio } from "../helpers/has-bambu-studio.js";
 
 describe("bambu-studio-cli adapter", () => {
   describe("parseBambuVersion", () => {
@@ -22,7 +23,7 @@ describe("bambu-studio-cli adapter", () => {
   });
 
   describe("findBambuStudio", () => {
-    it.skipIf(!process.env.BAMBU_STUDIO_PATH && process.platform !== "darwin")(
+    it.skipIf(!hasBambuStudio)(
       "finds BambuStudio at the default macOS path",
       async () => {
         const path = await findBambuStudio();
