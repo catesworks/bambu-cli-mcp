@@ -3,6 +3,8 @@
 ## Status
 Accepted
 
+> **Correction (2026-11-14):** Tool Summary item 3 originally read "scale_mesh — Uniform or per-axis scaling." The implementation (`ScaleMeshSchema` in `src/cad-geometry-mcp/schemas/tools.ts` and `scaleMesh()` in `src/cad-geometry-mcp/engines/manifold-engine.ts`) is uniform-only: one `scale: number` applied equally to all three axes. Corrected below. Per-axis scaling is an open product decision (bead bambu-cli-mcp-bpw), not a shipped feature.
+
 ## Context
 
 Individual mesh and slicing tools work well for single operations (inspect a mesh, scale by 2x, repair topology), but users often need complete multi-step pipelines:
@@ -282,7 +284,7 @@ const bestEngine = engines
 ### Core Tools (7)
 1. `inspect_mesh` — Analyze mesh properties
 2. `repair_mesh` — Fix topology and validate manifold
-3. `scale_mesh` — Uniform or per-axis scaling
+3. `scale_mesh` — Uniform scaling by any factor
 4. `split_mesh` — Grid-based partitioning
 5. `lay_flat` — Orient for build plate
 6. `generate_assembly_manifest` — Create assembly manifest
