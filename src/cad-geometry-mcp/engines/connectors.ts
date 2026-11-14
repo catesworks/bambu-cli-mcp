@@ -236,7 +236,16 @@ export interface DowelSpec {
   countPerSeam: number;
 }
 
-export type ConnectorSpec = DowelSpec;
+export interface HeatInsertSpec {
+  type: "heat_insert";
+  outerDiameterMm: number;
+  depthMm: number;
+  screwDiameterMm: number;
+  clearanceMm: number;
+  countPerSeam: number;
+}
+
+export type ConnectorSpec = DowelSpec | HeatInsertSpec;
 
 export interface ConnectorResult {
   seam: string;
@@ -372,6 +381,120 @@ export async function addDowelConnectors(
   return { parts: outputParts, connectors: connectorResults };
 }
 
+/**
+ * Add heat-set insert connectors along seams. Part A (the side the seam normal
+ * points away from) gets a blind pocket for the insert; part B gets a screw
+ * hole through its full thickness, so the screw goes in from B's outer face.
+ */
+export async function addHeatInsertConnectors(
+  partsDir: string,
+  outputDir: string,
+  connector: HeatInsertSpec,
+): Promise<{
+  parts: Array<{ id: string; file: string }>;
+  connectors: ConnectorResult[];
+}> {
+  if (connector.screwDiameterMm >= connector.outerDiameterMm) {
+    throw new Error("screwDiameterMm must be smaller than outerDiameterMm");
+  }
+
+  const mod = await getModule();
+  mod.setCircularSegments(32);
+
+  const seams = await detectSeams(partsDir);
+  const files = await readdir(partsDir);
+  const stlFiles = files.filter((f) => f.endsWith(".stl")).sort();
+
+  const parts = new Map<string, { manifold: ManifoldInstance; file: string }>();
+  for (const file of stlFiles) {
+    const filePath = join(partsDir, file);
+    const id = basename(file, ".stl").replace("part_", "");
+    parts.set(id, { manifold: await loadStlAsManifold(filePath), file: filePath });
+  }
+
+  const connectorResults: ConnectorResult[] = [];
+  const pocketRadius = connector.outerDiameterMm / 2;
+  const screwRadius = connector.screwDiameterMm / 2 + connector.clearanceMm;
+
+  for (const seam of seams) {
+    const partA = parts.get(seam.partA);
+    const partB = parts.get(seam.partB);
+    if (!partA || !partB) continue;
+
+    const candidates = distributeConnectors(
+      seam,
+      partA.manifold.boundingBox(),
+      partB.manifold.boundingBox(),
+      connector.countPerSeam,
+    );
+
+    const validPositions: Vec3[] = [];
+    for (const pos of candidates) {
+      const probe = mod.Manifold.sphere(pocketRadius, 8);
+      const probeAt = probe.translate(pos);
+      const hitA = partA.manifold.intersect(probeAt);
+      const hitB = partB.manifold.intersect(probeAt);
+      const aHasGeometry = !hitA.isEmpty() && hitA.volume() > 0.1;
+      const bHasGeometry = !hitB.isEmpty() && hitB.volume() > 0.1;
+      hitA.delete();
+      hitB.delete();
+      probeAt.delete();
+      probe.delete();
+      if (aHasGeometry && bHasGeometry) validPositions.push(pos);
+    }
+    if (validPositions.length === 0) continue;
+
+    // The seam normal points from A into B, and orientCylinder extends along
+    // the normal it is given, so cuts into A must use the negated normal.
+    const normal = seam.plane.normal;
+    const intoA: Vec3 = [-normal[0], -normal[1], -normal[2]];
+    const boxB = partB.manifold.boundingBox();
+    const axis = Math.abs(normal[0]) > 0.9 ? 0 : Math.abs(normal[1]) > 0.9 ? 1 : 2;
+    const throughDepth = boxB.max[axis] - boxB.min[axis] + 1;
+
+    for (const pos of validPositions) {
+      const pocket = orientCylinder(
+        mod.Manifold.cylinder(connector.depthMm, pocketRadius, pocketRadius, 32, false),
+        intoA,
+        pos,
+      );
+      const newA = partA.manifold.subtract(pocket);
+      partA.manifold.delete();
+      partA.manifold = newA;
+      pocket.delete();
+
+      const hole = orientCylinder(
+        mod.Manifold.cylinder(throughDepth, screwRadius, screwRadius, 32, false),
+        normal,
+        pos,
+      );
+      const newB = partB.manifold.subtract(hole);
+      partB.manifold.delete();
+      partB.manifold = newB;
+      hole.delete();
+    }
+
+    // malePartId/femalePartId keep the dowel field names: male = pocket side, female = screw side.
+    connectorResults.push({
+      seam: seam.seam,
+      type: connector.type,
+      positions: validPositions,
+      malePartId: seam.partA,
+      femalePartId: seam.partB,
+    });
+  }
+
+  const outputParts: Array<{ id: string; file: string }> = [];
+  for (const [id, part] of parts) {
+    const outPath = join(outputDir, `part_${id}.stl`);
+    await saveManifoldAsStl(part.manifold, outPath);
+    part.manifold.delete();
+    outputParts.push({ id, file: outPath });
+  }
+
+  return { parts: outputParts, connectors: connectorResults };
+}
+
 /** Add connectors of any supported type, dispatching on `connector.type`. */
 export async function addConnectors(
   partsDir: string,
@@ -384,6 +507,8 @@ export async function addConnectors(
   switch (connector.type) {
     case "dowel":
       return addDowelConnectors(partsDir, outputDir, connector);
+    case "heat_insert":
+      return addHeatInsertConnectors(partsDir, outputDir, connector);
   }
 }
 

@@ -62,12 +62,26 @@ Part 0          Part 1          Part 2
 - part_1 has hole cylinders on its left face and pin cylinders on its right face
 - part_2 has hole cylinders on its left face
 
+## Heat-Set Insert Connectors
+
+`split_with_connectors` and `make_printable_large_model` also accept a `heat_insert` connector:
+
+```json
+{
+  "type": "heat_insert",
+  "outerDiameterMm": 5.0,
+  "depthMm": 6.0,
+  "screwDiameterMm": 3.0,
+  "clearanceMm": 0.2,
+  "countPerSeam": 2
+}
+```
+
+At each seam, one part gets a blind pocket (`outerDiameterMm` wide, `depthMm` deep) for the brass insert. The other part gets a screw hole (`screwDiameterMm` plus `clearanceMm` on the radius) through its full thickness, so the screw goes in from that part's outer face. `screwDiameterMm` must be smaller than `outerDiameterMm`. `add_dowel_connectors` accepts dowels only.
+
 ## Future Connector Types
 
-The current implementation supports dowel pins only. Planned additions:
+Planned additions:
 
-- **Bolt channels** — M3/M4 through-holes with hex nut recesses for mechanical fastening
-- **Heat-set insert pockets** — cylindrical pockets sized for M3 heat-set brass inserts
+- **Bolt channels** — through-holes with a head counterbore for mechanical fastening
 - **Snap-fit clips** — flexible cantilever clips for tool-free assembly
-
-These will be added as additional tools (`add_bolt_connectors`, `add_heatset_connectors`) following the same seam-detection and surface-validation approach.
