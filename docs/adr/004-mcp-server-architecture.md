@@ -3,14 +3,16 @@
 ## Status
 Accepted
 
+> **Correction (2026-11-14):** The original "Server 1: bambu-cli-mcp" scope draft listed live device and print-queue control (query device status, list connected devices, export to device, get/cancel/pause/resume print jobs, get/set device settings). None of that was implemented, and it is an explicit non-goal: this project is a local-file/BambuStudio-CLI wrapper, not a live printer or cloud integration, so live control is out of scope rather than postponed. The Context section and the tool list below now name the 11 implemented tools (`src/bambu-cli-mcp/server.ts`). The original draft is in git history (`git log -p -- docs/adr/004-mcp-server-architecture.md`).
+
 ## Context
 The project needs to expose two logically distinct sets of MCP tools:
 
 1. **Bambu Studio Integration** (bambu-cli-mcp)
-   - Wraps BambuStudio CLI operations (slicing, export, device control)
+   - Wraps BambuStudio CLI operations (slicing, export, project validation)
    - Approximately 11 tools
    - Requires: BambuStudio installation on host system
-   - Operations: Export models, slice files, queue prints, query device status, etc.
+   - Operations: Convert, arrange, orient and slice projects, export previews/STLs/settings, estimate prints
 
 2. **CAD Geometry Operations** (cad-geometry-mcp)
    - Mesh processing using manifold-3d (ADR 002)
@@ -187,18 +189,18 @@ bun build --compile ./packages/cad-geometry-mcp/dist/index.js
 
 ### Tool Count and Scope
 
-**Server 1: bambu-cli-mcp** (11 tools)
-- Query device status
-- List connected devices
-- Export model to device
-- Get print status
-- Cancel print job
-- Pause print job
-- Resume print job
-- Get device settings
-- Set device settings
-- Slice model (invoke BambuStudio slicer)
-- Query available filament profiles
+**Server 1: bambu-cli-mcp** (11 tools) — all local-file/BambuStudio-CLI operations, see the Correction at the top of this file
+- `inspect_bambu_cli`
+- `export_settings`
+- `convert_to_3mf`
+- `arrange_project`
+- `orient_project`
+- `slice_project`
+- `export_plate_png`
+- `export_stls`
+- `validate_project`
+- `estimate_print`
+- `create_print_package`
 
 **Server 2: cad-geometry-mcp** (6+ tools, expandable)
 - Inspect mesh (vertices, faces, topology)
