@@ -16,6 +16,7 @@ describe("server selection", () => {
     expect(tools).toContain("inspect_bambu_cli");
     expect(tools).toContain("slice_project");
     expect(tools).not.toContain("inspect_mesh");
+    expect(tools).not.toContain("repair_and_slice");
   });
 
   it("creates the geometry tool server for geometry mode", () => {
@@ -24,6 +25,7 @@ describe("server selection", () => {
     expect(tools).toContain("inspect_mesh");
     expect(tools).toContain("make_printable_large_model");
     expect(tools).not.toContain("inspect_bambu_cli");
+    expect(tools).not.toContain("repair_and_slice");
   });
 
   it("creates a combined tool server for both mode", () => {
@@ -33,5 +35,6 @@ describe("server selection", () => {
     expect(tools).toContain("slice_project");
     expect(tools).toContain("inspect_mesh");
     expect(tools).toContain("make_printable_large_model");
+    expect(tools).toContain("repair_and_slice");
   });
 });
